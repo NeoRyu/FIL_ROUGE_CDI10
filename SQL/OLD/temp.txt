@@ -1,0 +1,194 @@
+--v1----------------------------------------------------
+
+CREATE OR REPLACE TRIGGER CHECK_COL_SEXE 
+  BEFORE INSERT OR UPDATE OF COL_ETATCIVIL,COL_SEXE ON COLLABORATEURS
+  --REFERENCING OLD AS old_buffer NEW AS new_buffer 
+  DECLARE 
+    VAR_SEXE        CHAR(1);
+    VAR_ETATCIVIL   CHAR(3);
+BEGIN  
+      SELECT COL_SEXE INTO VAR_SEXE FROM dual;
+      
+      IF VAR_SEXE = 'H'       THEN
+        SELECT COL_ETATCIVIL INTO VAR_ETATCIVIL FROM dual;
+        CHECK (UPPER(VAR_ETATCIVIL) IN ('M.', 'MR'));
+      
+      ELSE IF VAR_SEXE = 'F'  THEN
+        SELECT COL_ETATCIVIL INTO VAR_ETATCIVIL FROM dual;
+        CHECK (UPPER(VAR_ETATCIVIL) IN ('MME', 'MLLE'));
+      
+      --ELSE
+      --  ROLLBACK;
+      
+      END IF;
+      
+      RETURN 
+END;
+
+
+
+
+--v2 : utilisée ----------------------------------------------------
+
+alter table "CDI10"."COLLABORATEURS" add constraint CHECK_SEXE check(UPPER(COL_SEXE) IN ('M', 'F')) ENABLE;
+alter table "CDI10"."COLLABORATEURS" add constraint CHECK_ETATCIVIL check(UPPER(COL_ETATCIVIL) IN ('M.', 'MR', 'MME', 'MLLE')) ENABLE;
+
+CREATE OR REPLACE TRIGGER CHECK_COL_SEXE 
+  BEFORE INSERT OR UPDATE OF COL_ETATCIVIL,COL_SEXE ON COLLABORATEURS
+  --REFERENCING OLD AS old NEW AS new 
+  FOR EACH ROW
+  DECLARE 
+    VAR_SEXE        CHAR(1);
+    VAR_ETATCIVIL   CHAR(4);
+	--ERREUR   EXCEPTION;
+    --PRAGMA EXCEPTION_INIT (ERREUR, -20001); --'Données incorrectes'
+    --PRAGMA EXCEPTION_INIT (ERREUR, -20999); --'New id not allowed'
+BEGIN  
+      -- On interroge la table virtuelle d'insertion contenant les NEW valeurs :
+      SELECT :NEW.COL_SEXE INTO VAR_SEXE FROM dual;
+      SELECT :NEW.COL_ETATCIVIL INTO VAR_ETATCIVIL FROM dual;
+      
+	  IF VAR_SEXE = 'M' OR VAR_SEXE = 'F'  
+    THEN
+    
+      -- Si l'ajout/update du collaborateur est de sexe MASCULIN (M)
+        IF VAR_SEXE = 'M'      
+        THEN      
+          -- On vérifie alors qu'il à une donnée correcte pour son ETAT CIVIL :
+          IF VAR_ETATCIVIL != 'M.' OR VAR_ETATCIVIL != 'MR' THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Etat civil incorrect !');
+          END IF;
+        END IF;
+        -- Si l'ajout/update du collaborateur est de sexe FEMININ (F)
+        IF VAR_SEXE = 'F'  
+        THEN      
+          -- On vérifie alors qu'elle à une donnée correcte pour son ETAT CIVIL :
+          IF VAR_ETATCIVIL != 'MME' OR VAR_ETATCIVIL != 'MLLE' THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Etat civil incorrect !');
+          END IF; 
+        END IF;
+	  
+      ---- Autrement on gère l'exception :
+    ELSE      
+      RAISE_APPLICATION_ERROR(-20001, 'Sexe inconnu');
+    END IF;
+
+END;
+
+
+
+
+--v3-----------------------------------------------------------------
+
+alter table "CDI10"."COLLABORATEURS" add constraint CHECK_SEXE check(UPPER(COL_SEXE) IN ('M', 'F')) ENABLE
+alter table "CDI10"."COLLABORATEURS" add constraint CHECK_ETATCIVIL check(UPPER(COL_ETATCIVIL) IN ('M.', 'MR', 'MME', 'MLLE')) ENABLE
+
+CREATE OR REPLACE TRIGGER CHECK_COL_SEXE 
+  BEFORE INSERT OR UPDATE OF COL_ETATCIVIL,COL_SEXE ON COLLABORATEURS
+  REFERENCING NEW AS new OLD AS old
+  FOR EACH ROW
+  DECLARE 
+    VAR_SEXE        CHAR(1);
+    VAR_ETATCIVIL   CHAR(3);
+BEGIN  
+      -- On interroge la table virtuelle d'insertion contenant les NEW valeurs :
+      SELECT new.COL_SEXE INTO VAR_SEXE FROM dual;      
+      
+      -- Si l'ajout/update du collaborateur est de sexe MASCULIN (M)
+      IF VAR_SEXE = 'M'      
+      THEN      
+        -- On vérifie alors qu'il à une donnée correcte pour son ETAT CIVIL :
+        SELECT new.COL_ETATCIVIL INTO VAR_ETATCIVIL FROM dual;
+        IF VAR_ETATCIVIL != 'M.' OR VAR_ETATCIVIL != 'MR' THEN
+          RAISE_APPLICATION_ERROR(-20001, 'Etat civil incorrect !');
+        END IF;
+      END IF;      
+      -- Si l'ajout/update du collaborateur est de sexe FEMININ (F)
+      IF VAR_SEXE = 'F'  
+      THEN      
+        -- On vérifie alors qu'elle à une donnée correcte pour son ETAT CIVIL :
+        SELECT new.COL_ETATCIVIL INTO VAR_ETATCIVIL FROM dual;
+        IF VAR_ETATCIVIL != 'MME' OR VAR_ETATCIVIL != 'MLLE' THEN
+          RAISE_APPLICATION_ERROR(-20001, 'Etat civil incorrect !');
+        END IF; 
+      END IF;      
+      ---- Autrement on gère l'exception :
+      IF VAR_SEXE != 'F' OR VAR_SEXE = 'M' 
+      THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Sexe inconnu');
+      ELSE
+        IF VAR_ETATCIVIL != 'M.' OR VAR_ETATCIVIL != 'MR' OR VAR_ETATCIVIL != 'MME' OR VAR_ETATCIVIL != 'MLLE' THEN   
+          RAISE_APPLICATION_ERROR(-20001, 'Etat civil inconnu');
+        ELSE
+          INSERT INTO COLLABORATEURS VALUES 
+          ( new.COL_MATRICULE,new.COL_COL_MATRICULE,new.COL_SEXE,new.COL_ETATCIVIL,
+            new.COL_NOM,new.COL_PRENOM,new.COL_DATENAISSANCE,new.COL_ADRESSE1,
+            new.COL_ADRESSE2,new.COL_VILLE,new.COL_CP,new.COL_TELEPHONE,
+            new.COL_STATUT,new.COL_ANCIENNETE,new.COL_CENTRESINTERETS );
+        END IF;
+      END IF;
+END;
+
+
+
+
+--v4-----------------------------------------------------------------
+
+alter table "CDI10"."COLLABORATEURS" add constraint CHECK_SEXE check(UPPER(COL_SEXE) IN ('M', 'F')) ENABLE
+alter table "CDI10"."COLLABORATEURS" add constraint CHECK_ETATCIVIL check(UPPER(COL_ETATCIVIL) IN ('M.', 'MR', 'MME', 'MLLE')) ENABLE
+
+CREATE OR REPLACE TRIGGER CHECK_COL_SEXE 
+  BEFORE INSERT OR UPDATE OF COL_ETATCIVIL,COL_SEXE ON COLLABORATEURS
+  REFERENCING NEW AS new OLD AS old
+  --FOR EACH ROW
+  DECLARE 
+    VAR_SEXE        CHAR(1);
+    VAR_ETATCIVIL   CHAR(3);
+    CHECK_OK        BOOLEAN:=false;
+BEGIN  
+      -- On interroge la table virtuelle d'insertion contenant les NEW valeurs :
+      SELECT new.COL_SEXE INTO VAR_SEXE FROM dual;      
+      
+      -- Si l'ajout/update du collaborateur est de sexe MASCULIN (M)
+      IF VAR_SEXE = 'M'      
+      THEN      
+        -- On vérifie alors qu'il à une donnée correcte pour son ETAT CIVIL :
+        SELECT new.COL_ETATCIVIL INTO VAR_ETATCIVIL FROM dual;
+        IF VAR_ETATCIVIL != 'M.' OR VAR_ETATCIVIL != 'MR' THEN
+          RAISE_APPLICATION_ERROR(-20001, 'Etat civil incorrect !');
+        END IF;
+      END IF;      
+      -- Si l'ajout/update du collaborateur est de sexe FEMININ (F)
+      IF VAR_SEXE = 'F'  
+      THEN      
+        -- On vérifie alors qu'elle à une donnée correcte pour son ETAT CIVIL :
+        SELECT new.COL_ETATCIVIL INTO VAR_ETATCIVIL FROM dual;
+        IF VAR_ETATCIVIL != 'MME' OR VAR_ETATCIVIL != 'MLLE' THEN
+          RAISE_APPLICATION_ERROR(-20001, 'Etat civil incorrect !');
+        END IF; 
+      END IF;      
+      ---- Autrement on gère l'exception :
+      IF VAR_SEXE != 'F' OR VAR_SEXE = 'M' 
+      THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Sexe inconnu');
+      ELSE
+        IF VAR_ETATCIVIL != 'M.' OR VAR_ETATCIVIL != 'MR' THEN
+          RAISE_APPLICATION_ERROR(-20001, 'Etat civil inconnu');
+          CHECK_OK := false;
+        END IF;
+        IF VAR_ETATCIVIL != 'MME' OR VAR_ETATCIVIL != 'MLLE' THEN  
+          RAISE_APPLICATION_ERROR(-20001, 'Etat civil inconnu');
+          CHECK_OK := false;
+        ELSE
+          IF CHECK_OK != false  THEN      
+            INSERT INTO COLLABORATEURS VALUES 
+            ( new.COL_MATRICULE,new.COL_COL_MATRICULE,new.COL_SEXE,new.COL_ETATCIVIL,
+              new.COL_NOM,new.COL_PRENOM,new.COL_DATENAISSANCE,new.COL_ADRESSE1,
+              new.COL_ADRESSE2,new.COL_VILLE,new.COL_CP,new.COL_TELEPHONE,
+              new.COL_STATUT,new.COL_ANCIENNETE,new.COL_CENTRESINTERETS );
+          ELSE
+            RAISE_APPLICATION_ERROR(-20001, 'SEXE / ETAT CIVIL semblent incorrect...');
+          END IF;
+        END IF;
+      END IF;
+END;

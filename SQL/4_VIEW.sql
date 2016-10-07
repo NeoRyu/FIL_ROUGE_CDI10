@@ -1,0 +1,28 @@
+/* VIEW
+-- https://docs.oracle.com/cd/B28359_01/server.111/b28286/statements_8004.htm
+*/
+
+---------------------------------------------------------------------------
+
+-- EXEMPLE : Vue comprenant le matricule, le nom et prenom, l'id de la fonction et le libelle de la fonction occuppée, ainsi que le salaire de base.
+DROP VIEW VUE_PROFESSION;
+
+CREATE OR REPLACE VIEW VUE_PROFESSION AS 
+SELECT 
+  COLLABORATEURS.COL_MATRICULE,
+  COLLABORATEURS.COL_PRENOM,
+  COLLABORATEURS.COL_NOM,
+  LIBFONCTIONS.FONCTION_ID,
+  LIBFONCTIONS.FONCTION_LIBELLE,
+  OCCUPERFONCTIONS.COL_SALAIREBASE
+FROM COLLABORATEURS
+INNER JOIN OCCUPERFONCTIONS ON COLLABORATEURS.COL_MATRICULE = OCCUPERFONCTIONS.COL_MATRICULE
+INNER JOIN LIBFONCTIONS ON LIBFONCTIONS.FONCTION_ID = OCCUPERFONCTIONS.FONCTION_ID
+--WHERE COLLABORATEURS.COL_MATRICULE = numero
+;
+
+SELECT * FROM COLLABORATEURS;
+SELECT * FROM OCCUPERFONCTIONS;
+SELECT * FROM VUE_PROFESSION ; -- (1601);
+
+---------------------------------------------------------------------------

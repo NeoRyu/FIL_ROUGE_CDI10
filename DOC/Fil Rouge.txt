@@ -1,0 +1,54 @@
+FIL ROUGE : ACTIVE BRETAGNE INFORMATIQUE
+
+Application : Gestionnaire d'activité et suivi du personnel
+> De réaliser le suivi des projets, en interne (technique) et en externe (commercial)
+> De suivre les différentes missions de chaque collaborateur > et de capitaliser les différents retours d’expérience.
+> De suivre la carrière des collaborateurs.
+
+Les effectifs d’ABI sont composés de :
+> Une direction :
+	Un directeur général, administratif et financier
+	* Un responsable des ressources humaines (RRH)
+	* Un responsable commercial
+	Un secrétariat administratif (1 personne)
+> Un département opérationnel composé de :
+	* Un responsable du département études
+	Des ingénieurs d’études (20 personnes)
+	* Chefs de projet (Collaborateur_CP)
+	Analystes
+	Développeurs
+	* Un secrétariat technique (2 personnes)
+	Des techniciens supports (5 personnes)
+	Des commerciaux (2 personnes)
+
+Gestion ressources humaines : (collaborateurs)
+> matricule
+> remunération
+> fonction
+> statut
+> ancienneté
+> centres d'interets
+> projet actuel sur lequel il travail
+> evolution de fonction
+
+Gestion de projet : (initialisation par respon etudes)
+> nom (abrégé et long)
+> code
+> type (forfait, assistance, regie)
+> secteur d'activité
+> cycle de vie (complet, etudes de l'existant, développement, ...)
+> charge globale de travail estimée (en heures)
+> date previsionnelle debut
+> date previsionnelle fin
+> nom chef de projet
+> nom client
+(complété par secreteriat technique)
+> date reelle debut
+> date relle fin
+> taille max equipe
+(complété par responsable commercial)
+> commentaires
+> contact
+
+
+

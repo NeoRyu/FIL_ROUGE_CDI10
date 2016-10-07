@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?PowerDesigner signature="Workspace" version="15.1.0.2850"?>
+<!-- Veuillez ne pas modifier ce fichier -->
+
+<Workspace>
+	<Local Expanded="Yes">
+		<Model Expanded="Yes" ID="{7B0CEB15-B69C-4E98-87EC-32BFA47690C7}" Name="FIL ROUGE" Type="{FF4B6538-9856-42CF-B9B9-304ED370CEAA}" URL="FIL_ROUGE.prj"/>
+	</Local>
+	<BrowserModule Name="Référentiel"/>
+</Workspace>

@@ -1,0 +1,20 @@
+CREATE OR REPLACE TRIGGER CHECK_COL_AGE
+BEFORE INSERT OR UPDATE OF COL_DATENAISSANCE ON COLLABORATEURS
+FOR EACH ROW 
+DECLARE
+  COL_AGE NUMBER(3);
+BEGIN     
+
+    -- Calcul la difference (années) entre la date actuelle et date de naissance :
+    SELECT trunc(months_between(SYSDATE, to_date(:NEW.COL_DATENAISSANCE))/365) INTO COL_AGE FROM dual WHERE COL_MATRICULE = :NEW.COL_MATRICULE;
+    
+    -- Detection des personnes mineures :
+    IF (COL_AGE < 0) THEN 
+        RAISE_APPLICATION_ERROR(-20000, 'Avoir un âge négatif est interdit !'); 
+    END IF; 
+	
+    IF (COL_AGE < 16) THEN 
+        RAISE_APPLICATION_ERROR(-20000, 'Ce collaborateur est encore mineur !'); 
+    END IF;     
+	
+END;
